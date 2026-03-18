@@ -66,11 +66,19 @@ class Client:
 client = Client("deepseek")
 
 # 非stream 模式
-response_content = client.get_response_content(
+# response_content = client.get_response_content(
+#     model="deepseek-chat",
+#     content="你好"
+# )
+# print("用 SDK 的结果：", response_content)
+
+response = client.get_response(
     model="deepseek-chat",
-    content="你好"
+    content="你好",
+    stream=False
 )
-print("用 SDK 的结果：", response_content)
+
+print(response)
 
 # stream 模式
 # response = client.get_response(
