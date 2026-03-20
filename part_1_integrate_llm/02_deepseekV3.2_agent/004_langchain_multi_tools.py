@@ -4,6 +4,7 @@ from langchain_deepseek import ChatDeepSeek
 from langchain.agents import create_agent
 import os
 from dotenv import load_dotenv
+from datetime import datetime
 
 @tool
 def get_weather(location: str) -> str:
@@ -19,15 +20,23 @@ def get_weather(location: str) -> str:
     data = weather_data[location]
     return f"天气信息：{location}的天气是{data['condition']}，温度{data['temperature']}度，湿度{data['humidity']}%"
 
-print(get_weather.name)
-print(get_weather.description)
-print(get_weather.args)
+def write_file(content: str) -> str:
+    """将内容写入文件"""
+    try:
+        timestamp = datetime.now().strftime("%Y%m%d%H%M%S")
+        filename = f"output_{timestamp}.txt"
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(content)
+        abs_path = os.path.abspath(filename)
+        return f"文件已写入{abs_path}"
+    except Exception as e:
+        return f"写入文件时出错：{str(e)}"
 
 load_dotenv(override=True)
 model = ChatDeepSeek(model="deepseek-chat", api_key=os.getenv("DEEPSEEK_API_KEY"))
-agent = create_agent(model, tools=[get_weather], system_prompt="你是一名多才多艺的智能助手，可以调用工具帮助用户解决问题。")
+agent = create_agent(model, tools=[get_weather, write_file], system_prompt="你是一名多才多艺的智能助手，可以调用工具帮助用户解决问题。")
 
-result = agent.invoke({"messages": [{"role": "user", "content": "北京和上海的天气"}]})
+result = agent.invoke({"messages": [{"role": "user", "content": "北京的天气如何，写入到文件中"}]})
 print(result["messages"][-1].content)
 for record in result["messages"]:
     print(record)
